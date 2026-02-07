@@ -1,0 +1,57 @@
+table: public.customer_care_emails
+
+primary_key:
+  - thread_id
+
+columns:
+  - name: subject
+    type: text
+    nullable: false
+
+  - name: sender
+    type: text
+    nullable: false
+
+  - name: receiver
+    type: text
+    nullable: false
+
+  - name: timestamp
+    type: timestamp
+    nullable: false
+
+  - name: message_body
+    type: text
+    nullable: false
+
+  - name: thread_id
+    type: text
+    nullable: false
+
+  - name: email_types
+    type: text
+    nullable: true
+
+  - name: email_status
+    type: text
+    nullable: true
+
+  - name: email_criticality
+    type: text
+    nullable: true
+
+  - name: product_types
+    type: text
+    nullable: true
+
+  - name: agent_effectivity
+    type: text
+    nullable: true
+
+  - name: agent_efficiency
+    type: text
+    nullable: true
+
+  - name: customer_satisfaction
+    type: numeric
+    nullable: true
