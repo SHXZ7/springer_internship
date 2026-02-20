@@ -39,4 +39,50 @@ DAY -2
 > 
 
 > Overall, the project demonstrates a complete, production-style data pipeline with orchestration, validation, containerization, and clear documentation.
->
+
+day -3
+build 
+Here’s what it does:
+
+1. **Takes a CSV file**
+    
+    Located at:
+    
+    ```
+    dags/extraction/customer_care_emails.csv
+    ```
+    
+2. **Checks that the file exists**
+    
+    If missing → DAG fails.
+    
+3. **Validates schema**
+    
+    Compares CSV columns against `schema_expected.yaml`.
+    
+    If mismatch → DAG fails.
+    
+4. **Cleans / transforms the data**
+    - Strips whitespace
+    - Casts types
+    - Handles nulls
+    - (Optionally) adds partition columns like year/month
+5. **Converts it to Parquet**
+    
+    Parquet is:
+    
+    - Compressed
+    - Columnar
+    - Efficient for analytics
+6. **Uploads the Parquet file to MinIO**
+    
+    MinIO acts like S3 object storage.
+    
+
+So your pipeline is:
+
+```
+CSV → Validate → Transform → Parquet → Object Storage
+```
+
+And all of this is orchestrated by Airflow inside Docker.
