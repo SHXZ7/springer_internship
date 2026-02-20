@@ -1,0 +1,155 @@
+---
+# Schema definition for Customer Care Emails dataset
+version: "1.0"
+dataset_name: customer_care_emails
+
+columns:
+  - name: subject
+    type: string
+    description: Email subject line
+    required: true
+    nullable: false
+    max_length: 500
+
+  - name: sender
+    type: string
+    description: Email address of the sender
+    required: true
+    nullable: false
+    format: email
+    max_length: 255
+
+  - name: receiver
+    type: string
+    description: Email address of the receiver
+    required: true
+    nullable: false
+    format: email
+    max_length: 255
+
+  - name: timestamp
+    type: timestamp
+    description: Date and time when the email was sent
+    required: true
+    nullable: false
+    format: "%Y-%m-%d %H:%M:%S%z"
+
+  - name: message_body
+    type: string
+    description: Full content of the email message
+    required: true
+    nullable: false
+    max_length: 10000
+
+  - name: thread_id
+    type: string
+    description: Unique identifier for email thread/conversation
+    required: true
+    nullable: false
+    pattern: "^aa\\d{3}-[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$"
+
+  - name: email_types
+    type: array
+    description: Classification of email type(s)
+    required: true
+    nullable: false
+    item_type: string
+    allowed_values:
+      - inquiry
+      - issue
+      - suggestion
+      - complaint
+      - feedback
+
+  - name: email_status
+    type: string
+    description: Current status of the email thread
+    required: true
+    nullable: false
+    allowed_values:
+      - ongoing
+      - completed
+      - pending
+      - escalated
+
+  - name: email_criticality
+    type: string
+    description: Priority/criticality level of the email
+    required: true
+    nullable: false
+    allowed_values:
+      - low
+      - medium
+      - high
+      - critical
+
+  - name: product_types
+    type: array
+    description: Products or services mentioned in the email
+    required: true
+    nullable: false
+    item_type: string
+    allowed_values:
+      - Mercury Language
+      - API Development
+      - API monitoring
+      - Cloud management
+      - IAM service
+
+  - name: agent_effectivity
+    type: string
+    description: Effectiveness rating of support agent response
+    required: true
+    nullable: false
+    allowed_values:
+      - very low
+      - low
+      - medium
+      - high
+      - very high
+
+  - name: agent_efficiency
+    type: string
+    description: Efficiency rating of support agent handling
+    required: true
+    nullable: false
+    allowed_values:
+      - very low
+      - low
+      - medium
+      - high
+      - very high
+
+  - name: customer_satisfaction
+    type: float
+    description: Customer satisfaction score
+    required: true
+    nullable: false
+    min_value: -1.0
+    max_value: 1.0
+
+# Data quality rules
+data_quality_rules:
+  - name: valid_email_format
+    description: Sender and receiver must be valid email addresses
+    columns: [sender, receiver]
+    
+  - name: timestamp_in_past
+    description: Email timestamp must be in the past
+    columns: [timestamp]
+    
+  - name: non_empty_message
+    description: Message body cannot be empty or only whitespace
+    columns: [message_body]
+    
+  - name: satisfaction_range
+    description: Customer satisfaction must be between -1 and 1
+    columns: [customer_satisfaction]
+
+# Metadata
+metadata:
+  source: Customer care email system
+  update_frequency: daily
+  owner: Customer Care Team
+  created_date: "2026-02-20"
+  last_updated: "2026-02-20"
