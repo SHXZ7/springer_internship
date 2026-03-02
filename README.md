@@ -86,3 +86,47 @@ CSV → Validate → Transform → Parquet → Object Storage
 ```
 
 And all of this is orchestrated by Airflow inside Docker.
+
+## DAY 4
+
+> I worked on building **Bronze to Silver layer data transformation pipelines** for the data warehouse.
+> 
+> This involved creating standardized transformation configurations for two datasets: **contact_employments** and **contact_phones**.
+
+> For each dataset, I created a complete transformation package consisting of five key configuration files.
+> 
+> The **config.yaml** defines the data source (Bronze layer table), target (Silver layer table), and transformation rules for each column.
+> 
+> The **dag.yaml** specifies the Airflow DAG settings including schedule, retries, timeouts, and processing configuration.
+> 
+> The **query.sql** implements the actual transformation logic using SQL to clean, normalize, and deduplicate the data.
+
+> The transformation logic includes multiple data quality steps:
+> 
+> - **String cleaning**: Trimming whitespace, converting to lowercase where appropriate, handling empty strings as nulls
+> - **Data validation**: Ensuring required fields like contact_id and organization_id are present and valid
+> - **Deduplication**: Using ROW_NUMBER() with PARTITION BY to keep only the most recent and relevant records
+> - **Date normalization**: Parsing dates consistently and handling null values properly
+> - **Boolean defaults**: Ensuring boolean flags like is_current have proper default values
+
+> I defined the **schema.yaml** for each target table, specifying column names, data types, nullability constraints, and descriptions.
+> 
+> This creates a clear schema contract that documents what the Silver layer tables should contain.
+
+> Finally, I built a comprehensive **tests.yaml** file with automated data quality tests:
+> 
+> - Row count validation to ensure data exists
+> - NOT NULL checks for required fields
+> - Empty string validation for key columns
+> - Data freshness checks to ensure timely updates
+> - Regex pattern matching for UUID format validation
+> - Custom SQL tests for business logic validation
+> - Occupation normalization checks to ensure lowercase consistency
+
+> This approach creates **reusable, configuration-driven transformation pipelines** that are easy to maintain and extend.
+> 
+> Each dataset follows the same pattern, making it simple to onboard new transformations in the future.
+> 
+> The combination of declarative configuration and SQL-based logic provides both flexibility and clarity.
+
+

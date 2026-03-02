@@ -1,0 +1,80 @@
+# Silver Layer - Black Diamond Contact Phones (AUTO MODE)
+# Schema inferred from Bronze: blackdiamond.contact_phones_raw
+# Phone numbers for contacts (PII data)
+# Settings inherited from _defaults.yaml unless overridden
+
+version: "1.0"
+
+dag:
+  description: "Transform and clean Black Diamond contact phones data from Bronze to Silver"
+  tags: ["silver", "blackdiamond", "contact-phones", "auto-mode", "pii"]
+  schedule_interval: "dataset"
+
+source:
+  database: blackdiamond
+  table: contact_phones_raw
+
+target:
+  database: blackdiamond_silver
+  table: contact_phones
+
+# Transform specifications
+transforms:
+  # Phone number - digits only normalization
+  phone:
+    transform: clean_phone
+
+  phone_number:
+    transform: clean_phone
+
+  number:
+    transform: clean_phone
+
+  # Label/type fields
+  phone_type:
+    transform: clean_string
+
+  type:
+    transform: clean_string
+
+  extension:
+    transform: clean_string
+
+# Deduplication - contact may have multiple phone types
+dedupe:
+  partition_by:
+    - contact_id
+    - phone_type
+    - processing_date
+  order_by:
+    - processing_timestamp DESC
+
+# Filters
+filters:
+  - "contact_id IS NOT NULL"
+  - "contact_id != ''"
+  - "glynac_organization_id IS NOT NULL"
+  - "glynac_organization_id != ''"
+
+# Lookback days
+lookback_days: 90
+
+# Data quality tests
+tests:
+  - type: row_count
+    min: 1
+    severity: error
+    description: "Ensure at least one contact phone record exists"
+
+  - type: not_null
+    columns:
+      - contact_id
+      - glynac_organization_id
+      - processing_date
+    severity: error
+    description: "Key columns must not be NULL"
+
+  - type: freshness
+    max_age_hours: 48
+    severity: warning
+    description: "Data should be refreshed within 48 hours"

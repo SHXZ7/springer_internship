@@ -1,0 +1,40 @@
+version: "1.0"
+
+dag:
+  dag_id: "silver_blackdiamond_contact_phones"
+  description: "Silver transformation for Black Diamond contact phones - transforms phone data from bronze to silver layer with PII handling"
+  tags: ["silver", "blackdiamond", "contact_phones", "pii", "phone_numbers"]
+  schedule_interval: "dataset"
+  default_args:
+    owner: "data_engineering"
+    retries: 3
+    retry_delay_minutes: 5
+    execution_timeout_minutes: 30
+
+source:
+  database: blackdiamond
+  table: contact_phones_raw
+  description: "Raw phone data from Black Diamond CRM (PII)"
+
+target:
+  database: blackdiamond_silver
+  table: contact_phones
+  description: "Cleaned and normalized phone records with digits-only format"
+
+# Data retention and lookback configuration
+lookback_days: 90
+
+# Processing configuration
+processing:
+  batch_size: 10000
+  parallelism: 4
+  enable_caching: true
+  
+# PII handling
+pii:
+  contains_pii: true
+  pii_columns:
+    - phone_number
+  compliance:
+    - GDPR
+    - CCPA
