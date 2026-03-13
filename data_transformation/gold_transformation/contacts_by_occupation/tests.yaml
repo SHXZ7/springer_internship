@@ -1,0 +1,8 @@
+tests:
+  - column: occupation
+    tests:
+      - not_null
+
+  - column: contact_count
+    tests:
+      - not_null

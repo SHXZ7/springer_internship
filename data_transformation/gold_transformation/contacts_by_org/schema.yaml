@@ -1,0 +1,12 @@
+version: "1.0"
+
+columns:
+  - name: glynac_organization_id
+    type: LowCardinality(String)
+    nullable: false
+    description: "Organization identifier"
+
+  - name: contact_count
+    type: UInt64
+    nullable: false
+    description: "Number of unique contacts"

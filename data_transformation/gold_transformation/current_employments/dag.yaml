@@ -1,0 +1,15 @@
+version: "1.0"
+
+dag:
+  dag_id: "gold_blackdiamond_current_employments"
+  description: "Gold metric: number of current employments per organization"
+  tags: ["gold", "blackdiamond", "metrics"]
+  schedule_interval: "dataset"
+
+source:
+  database: blackdiamond_silver
+  table: contact_employments
+
+target:
+  database: blackdiamond_gold
+  table: current_employments

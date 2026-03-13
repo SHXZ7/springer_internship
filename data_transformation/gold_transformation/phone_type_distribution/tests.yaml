@@ -1,0 +1,8 @@
+tests:
+  - column: label
+    tests:
+      - not_null
+
+  - column: phone_count
+    tests:
+      - not_null

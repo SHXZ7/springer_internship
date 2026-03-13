@@ -1,0 +1,12 @@
+version: "1.0"
+
+columns:
+  - name: occupation
+    type: String
+    nullable: false
+    description: "Occupation category from contact employment records"
+
+  - name: contact_count
+    type: UInt64
+    nullable: false
+    description: "Number of contacts in this occupation"

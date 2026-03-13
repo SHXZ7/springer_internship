@@ -1,0 +1,12 @@
+version: "1.0"
+
+columns:
+  - name: glynac_organization_id
+    type: LowCardinality(String)
+    nullable: false
+    description: "Organization identifier"
+
+  - name: contacts_without_phone
+    type: UInt64
+    nullable: false
+    description: "Number of contacts without phone numbers (data quality metric)"

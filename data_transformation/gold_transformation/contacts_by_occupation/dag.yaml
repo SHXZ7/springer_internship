@@ -1,0 +1,16 @@
+version: "1.0"
+
+dag:
+  dag_id: "gold_blackdiamond_contacts_by_occupation"
+  description: "Gold metric: contacts grouped by occupation"
+  tags: ["gold", "blackdiamond", "metrics"]
+  schedule_interval: "dataset"
+
+source:
+  database: blackdiamond_silver
+  table: contact_employments
+
+target:
+  database: blackdiamond_gold
+  table: contacts_by_occupation
+  

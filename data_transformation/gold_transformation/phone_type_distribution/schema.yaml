@@ -1,0 +1,12 @@
+version: "1.0"
+
+columns:
+  - name: label
+    type: String
+    nullable: false
+    description: "Type of phone number (MOBILE, WORK, HOME)"
+
+  - name: phone_count
+    type: UInt64
+    nullable: false
+    description: "Number of phone numbers for this type"

@@ -1,0 +1,8 @@
+tests:
+  - column: glynac_organization_id
+    tests:
+      - not_null
+
+  - column: current_employment_count
+    tests:
+      - not_null

@@ -1,0 +1,8 @@
+tests:
+  - column: glynac_organization_id
+    tests:
+      - not_null
+
+  - column: contact_count
+    tests:
+      - not_null

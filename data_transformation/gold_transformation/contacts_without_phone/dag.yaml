@@ -1,0 +1,17 @@
+version: "1.0"
+
+dag:
+  dag_id: "gold_blackdiamond_contacts_without_phone"
+  description: "Gold metric: contacts without phone numbers per organization (data quality)"
+  tags: ["gold", "blackdiamond", "metrics", "data-quality"]
+  schedule_interval: "dataset"
+
+source:
+  database: blackdiamond_silver
+  tables:
+    - contact_employments
+    - contact_phones
+
+target:
+  database: blackdiamond_gold
+  table: contacts_without_phone
