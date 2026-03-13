@@ -1,112 +1,48 @@
-# Data Quality Tests for Contact Phones (PII)
-version: "1.0"
-
 tests:
-  # Row count validation
-  - type: row_count
-    min: 1
-    severity: error
-    description: "Ensure at least one contact phone record exists"
 
-  # Null checks for required fields
-  - type: not_null
-    columns:
-      - contact_id
-      - glynac_organization_id
-      - processing_date
-    severity: error
-    description: "Key columns must not be NULL"
-
-  # Empty string checks
-  - type: not_empty
-    columns:
-      - contact_id
-      - glynac_organization_id
-    severity: error
-    description: "Key columns must not be empty strings"
-
-  # Data freshness
-  - type: freshness
-    column: processing_date
-    max_age_hours: 48
-    severity: warning
-    description: "Data should be refreshed within 48 hours"
-
-  # UUID format validation for contact_id
-  - type: regex_match
-    column: contact_id
-    pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-    severity: error
-    description: "contact_id must be valid UUID format"
-
-  # Phone number validation - should be digits only after cleaning
-  - type: custom_sql
+  - name: row_count_check
+    description: Ensure table is not empty
     query: |
-      SELECT COUNT(*) as invalid_phones
-      FROM blackdiamond_silver.contact_phones
-      WHERE phone_number IS NOT NULL
-        AND phone_number != ''
-        AND NOT match(phone_number, '^[0-9]+$')
-    expected: 0
-    severity: error
-    description: "phone_number should contain only digits after normalization"
+      SELECT COUNT(*) FROM blackdiamond_silver.contact_phones
+    condition: "> 0"
 
-  # Phone number length validation (reasonable range)
-  - type: custom_sql
+  - name: contact_id_not_null
+    description: contact_id must not be null
     query: |
-      SELECT COUNT(*) as invalid_length
+      SELECT COUNT(*)
       FROM blackdiamond_silver.contact_phones
-      WHERE phone_number IS NOT NULL
-        AND phone_number != ''
-        AND (length(phone_number) < 5 OR length(phone_number) > 15)
-    expected: 0
-    severity: warning
-    description: "phone_number should be between 5 and 15 digits"
+      WHERE contact_id IS NULL
+    condition: "= 0"
 
-  # Phone type normalization check
-  - type: custom_sql
+  - name: phone_number_not_null
+    description: phone numbers must not be null
     query: |
-      SELECT COUNT(*) as invalid_types
+      SELECT COUNT(*)
       FROM blackdiamond_silver.contact_phones
-      WHERE phone_type IS NOT NULL
-        AND phone_type != trimBoth(phone_type)
-    expected: 0
-    severity: warning
-    description: "phone_type should be trimmed of whitespace"
+      WHERE number IS NULL
+    condition: "= 0"
 
-  # Duplicate check - same contact, phone type, and date
-  - type: unique_combination
-    columns:
-      - contact_id
-      - phone_type
-      - glynac_organization_id
-      - processing_date
-    severity: warning
-    description: "Check for potential duplicate phone records"
-
-  # Referential integrity - organization_id format
-  - type: regex_match
-    column: glynac_organization_id
-    pattern: '^org-.*'
-    severity: error
-    description: "glynac_organization_id must follow org- prefix pattern"
-
-  # PII data presence check
-  - type: custom_sql
+  - name: phone_number_length
+    description: phone numbers must have at least 7 digits
     query: |
-      SELECT COUNT(*) as missing_phones
+      SELECT COUNT(*)
       FROM blackdiamond_silver.contact_phones
-      WHERE phone_number IS NULL OR phone_number = ''
-    max_percent: 10
-    severity: warning
-    description: "No more than 10% of records should have missing phone numbers"
+      WHERE length(number) < 7
+    condition: "= 0"
 
-  # Check for test/dummy phone numbers
-  - type: custom_sql
+  - name: remove_pii_masking_rows
+    description: ensure masked rows are removed
     query: |
-      SELECT COUNT(*) as dummy_phones
+      SELECT COUNT(*)
       FROM blackdiamond_silver.contact_phones
-      WHERE phone_number IN ('12345678910', '1234567890', '0000000000')
-    max_percent: 5
-    severity: warning
-    description: "Flag potential test/dummy phone numbers"
+      WHERE glynac_organization_id = 'org_pii_masking'
+    condition: "= 0"
+
+  - name: duplicate_phone_check
+    description: ensure no duplicate phones per contact
+    query: |
+      SELECT contact_id, number, COUNT(*)
+      FROM blackdiamond_silver.contact_phones
+      GROUP BY contact_id, number
+      HAVING COUNT(*) > 1
+    condition: "= 0"

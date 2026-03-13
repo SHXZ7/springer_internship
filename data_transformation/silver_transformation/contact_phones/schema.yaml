@@ -1,28 +1,28 @@
-# Schema for Black Diamond Contact Phones (Silver Layer)
-version: "1.0"
+table: contact_phones
 
 columns:
+
   - name: contact_id
     type: String
     nullable: false
-    description: "Unique identifier for the contact (UUID format)"
+    description: Unique identifier for contact
 
-  - name: phone_type
+  - name: label
     type: String
     nullable: true
-    description: "Type/category of phone number (e.g., HOME, MOBILE, Phone, Work Phone)"
+    description: Phone label (mobile, office, facility)
 
-  - name: phone_number
+  - name: number
     type: String
-    nullable: true
-    description: "Phone number (cleaned and normalized, digits only)"
+    nullable: false
+    description: Normalized phone number
 
   - name: glynac_organization_id
-    type: LowCardinality(String)
+    type: String
     nullable: false
-    description: "Organization identifier in Glynac system"
+    description: Organization identifier
 
   - name: processing_date
     type: Date
     nullable: false
-    description: "Date when the record was processed"
+    description: Data ingestion processing date

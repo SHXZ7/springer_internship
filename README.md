@@ -129,4 +129,26 @@ And all of this is orchestrated by Airflow inside Docker.
 > 
 > The combination of declarative configuration and SQL-based logic provides both flexibility and clarity.
 
+## DAY 5
+
+> I worked on completing the **Silver to Gold transformation layer** for analytics-ready reporting.
+> 
+> Building on the Silver tables (`blackdiamond_silver.contact_employments` and `blackdiamond_silver.contact_phones`), I created six Gold datasets for business metrics:
+> 
+> - **contacts_by_org**: counts distinct contacts per organization
+> - **contacts_by_occupation**: shows occupation-wise contact distribution
+> - **current_employments**: counts active employments (`is_current = true`) by organization
+> - **contacts_with_phone**: counts contacts that have phone numbers
+> - **contacts_without_phone**: identifies contacts missing phone numbers using LEFT JOIN logic
+> - **phone_type_distribution**: provides distribution of phone labels/types
+
+> For each Gold transformation, I prepared a complete, standardized package:
+> 
+> - **query.sql** with aggregation logic
+> - **schema.yaml** defining output schema contracts
+> - **dag.yaml** for orchestration configuration
+> - **tests.yaml** with column-level quality checks (mainly `not_null` on dimensions and metric columns)
+
+> This work makes the pipeline dashboard-ready by providing pre-aggregated, clean, and validated metrics that reduce query cost and improve reporting performance.
+
 

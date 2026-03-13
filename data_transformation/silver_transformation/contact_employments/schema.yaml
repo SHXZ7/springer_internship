@@ -1,45 +1,40 @@
+table: contact_employments
+
 columns:
+
   - name: contact_id
     type: String
     nullable: false
-    description: "Unique identifier for the contact"
+    description: Unique identifier for contact
 
   - name: employer_name
-    type: String
-    nullable: true
-    description: "Name of the employer"
+    type: Nullable(String)
+    description: Employer name
 
   - name: title
-    type: String
-    nullable: true
-    description: "Job title at the employer"
+    type: Nullable(String)
+    description: Job title
 
   - name: occupation
-    type: String
-    nullable: true
-    description: "Occupation category (normalized to lowercase)"
+    type: Nullable(String)
+    description: Normalized occupation value
 
   - name: start_date
-    type: String
-    nullable: true
-    description: "Employment start date"
+    type: Nullable(Date)
+    description: Employment start date
 
   - name: end_date
-    type: String
-    nullable: true
-    description: "Employment end date"
+    type: Nullable(Date)
+    description: Employment end date
 
   - name: is_current
     type: Bool
-    nullable: true
-    description: "Flag indicating if this is current employment"
+    description: Current employment flag
 
   - name: glynac_organization_id
-    type: LowCardinality(String)
-    nullable: false
-    description: "Organization identifier in Glynac system"
+    type: String
+    description: Organization identifier
 
   - name: processing_date
     type: Date
-    nullable: false
-    description: "Date when the record was processed"
+    description: Ingestion processing date

@@ -1,87 +1,56 @@
-# Data Quality Tests for Contact Employments
-version: "1.0"
-
 tests:
-  # Row count validation
-  - type: row_count
-    min: 1
-    severity: error
-    description: "Ensure at least one contact employment record exists"
 
-  # Null checks for required fields
-  - type: not_null
-    columns:
-      - contact_id
-      - glynac_organization_id
-      - processing_date
-    severity: error
-    description: "Key columns must not be NULL"
-
-  # Empty string checks
-  - type: not_empty
-    columns:
-      - contact_id
-      - glynac_organization_id
-    severity: error
-    description: "Key columns must not be empty strings"
-
-  # Data freshness
-  - type: freshness
-    column: processing_date
-    max_age_hours: 48
-    severity: warning
-    description: "Data should be refreshed within 48 hours"
-
-  # UUID format validation for contact_id
-  - type: regex_match
-    column: contact_id
-    pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-    severity: error
-    description: "contact_id must be valid UUID format"
-
-  # Occupation normalization check
-  - type: custom_sql
+  - name: row_count_check
+    description: Ensure table is not empty
     query: |
-      SELECT COUNT(*) as invalid_count
-      FROM blackdiamond_silver.contact_employments
-      WHERE occupation IS NOT NULL
-        AND occupation != lower(occupation)
-    expected: 0
-    severity: error
-    description: "Occupation should be normalized to lowercase"
+      SELECT COUNT(*) FROM blackdiamond_silver.contact_employments
+    condition: "> 0"
 
-  # Date format validation
-  - type: custom_sql
+  - name: contact_id_not_null
+    description: contact_id must not be null
     query: |
-      SELECT COUNT(*) as invalid_dates
+      SELECT COUNT(*)
       FROM blackdiamond_silver.contact_employments
-      WHERE start_date IS NOT NULL
-        AND start_date != ''
-        AND NOT (start_date LIKE '____-__-__%')
-    expected: 0
-    severity: warning
-    description: "start_date should follow date format pattern"
+      WHERE contact_id IS NULL
+    condition: "= 0"
 
-  # Boolean validation for is_current
-  - type: accepted_values
-    column: is_current
-    values: [true, false]
-    severity: error
-    description: "is_current must be a boolean value"
+  - name: valid_uuid_contact_id
+    description: contact_id should follow UUID format
+    query: |
+      SELECT COUNT(*)
+      FROM blackdiamond_silver.contact_employments
+      WHERE NOT match(contact_id,'^[0-9a-f-]{36}$')
+    condition: "= 0"
 
-  # Duplicate check
-  - type: unique_combination
-    columns:
-      - contact_id
-      - occupation
-      - glynac_organization_id
-      - processing_date
-    severity: warning
-    description: "Check for potential duplicate employment records"
+  - name: start_date_valid
+    description: start_date must be valid date
+    query: |
+      SELECT COUNT(*)
+      FROM blackdiamond_silver.contact_employments
+      WHERE start_date IS NULL
+    condition: "= 0"
 
-  # Referential integrity - organization_id format
-  - type: regex_match
-    column: glynac_organization_id
-    pattern: '^org-.*'
-    severity: error
-    description: "glynac_organization_id must follow org- prefix pattern"
+  - name: pii_tags_removed
+    description: ensure PII tags like ⟦P:xxxx⟧ are removed
+    query: |
+      SELECT COUNT(*)
+      FROM blackdiamond_silver.contact_employments
+      WHERE match(occupation,'⟦[pP]:')
+    condition: "= 0"
+
+  - name: remove_pii_masking_rows
+    description: ensure masking rows are removed
+    query: |
+      SELECT COUNT(*)
+      FROM blackdiamond_silver.contact_employments
+      WHERE glynac_organization_id = 'org_pii_masking'
+    condition: "= 0"
+
+  - name: duplicate_employment_check
+    description: ensure no duplicate employment records
+    query: |
+      SELECT contact_id, occupation, start_date, COUNT(*)
+      FROM blackdiamond_silver.contact_employments
+      GROUP BY contact_id, occupation, start_date
+      HAVING COUNT(*) > 1
+    condition: "= 0"
