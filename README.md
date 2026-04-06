@@ -1,154 +1,294 @@
-DAY -2 
+# 🗂️ Data Engineering Internship — Documentation Log
 
-> I worked on project DHAP-34, where I built an end-to-end data ingestion pipeline using Apache Airflow and PostgreSQL, fully containerized with Docker.
-> 
+> **Duration:** 3 Months &nbsp;|&nbsp; **Domain:** Data Engineering &nbsp;|&nbsp; **Role:** Data Engineering Intern  
+> A structured log of weekly deliverables, technical implementations, and learnings across a production-grade data engineering internship.
 
-> First, I selected a completed dataset called customer_care_emails and created the required dataset scaffolding.
-> 
-> 
-> This included a **manifest file**, a **schema contract in YAML**, a **SQL DDL file** to create the target table, and a **sample CSV**.
-> 
-> This ensured the dataset structure was clearly defined and reproducible.
-> 
+---
 
-> Next, I set up a Dockerized Airflow environment using Docker Compose.
-> 
-> 
-> This environment included the Airflow webserver, scheduler, and a PostgreSQL database, all running locally.
-> 
-> I verified that Airflow was accessible through the browser and that the environment could be started and stopped consistently.
-> 
+## 📋 Table of Contents
 
-> After that, I implemented an Airflow DAG that loads the CSV data into PostgreSQL.
-> 
-> 
-> The DAG performs four main steps:
-> 
-> it checks that the CSV file exists, validates the schema against the YAML contract, applies basic data cleaning, and loads the validated data into PostgreSQL.
-> 
-> I also handled duplicate records so the pipeline can be safely re-run without failing.
-> 
+- [Overview](#overview)
+- [Tech Stack](#tech-stack)
+- [Month 1 — Pipeline Foundations](#month-1--pipeline-foundations)
+- [Month 2 — Lakehouse Architecture](#month-2--lakehouse-architecture)
+- [Month 3 — Gold Layer & Analytics](#month-3--gold-layer--analytics)
+- [Key Takeaways](#key-takeaways)
 
-> I validated the pipeline by running the DAG end-to-end and confirming that data was successfully written to the PostgreSQL table using pgAdmin.
-> 
+---
 
-> Finally, I created detailed documentation and a runbook explaining how to set up the environment, run the pipeline, troubleshoot common issues, and update the dataset in the future.
-> 
-> 
-> This makes the pipeline easy for another engineer to reproduce and maintain.
-> 
+## Overview
 
-> Overall, the project demonstrates a complete, production-style data pipeline with orchestration, validation, containerization, and clear documentation.
+This repository documents my 3-month data engineering internship, organized week by week. Each entry covers the project context, what was built, the technical approach, and outcomes. The work spans end-to-end data pipeline development — from raw ingestion through orchestration, transformation, quality validation, and analytics-ready delivery.
 
-day -3
-build 
-Here’s what it does:
+---
 
-1. **Takes a CSV file**
-    
-    Located at:
-    
-    ```
-    dags/extraction/customer_care_emails.csv
-    ```
-    
-2. **Checks that the file exists**
-    
-    If missing → DAG fails.
-    
-3. **Validates schema**
-    
-    Compares CSV columns against `schema_expected.yaml`.
-    
-    If mismatch → DAG fails.
-    
-4. **Cleans / transforms the data**
-    - Strips whitespace
-    - Casts types
-    - Handles nulls
-    - (Optionally) adds partition columns like year/month
-5. **Converts it to Parquet**
-    
-    Parquet is:
-    
-    - Compressed
-    - Columnar
-    - Efficient for analytics
-6. **Uploads the Parquet file to MinIO**
-    
-    MinIO acts like S3 object storage.
-    
+## Tech Stack
 
-So your pipeline is:
+| Layer | Tools |
+|---|---|
+| Orchestration | Apache Airflow |
+| Storage | PostgreSQL, MinIO (S3-compatible) |
+| Containerization | Docker, Docker Compose |
+| Transformation | SQL, Python, Parquet |
+| Data Quality | YAML schema contracts, custom test suites |
+| Monitoring | pgAdmin, Airflow UI |
+| Formats | CSV → Parquet → PostgreSQL |
+
+---
+
+## Month 1 — Pipeline Foundations
+
+> **Focus:** Building a production-style ingestion pipeline from scratch with orchestration, validation, and containerization.
+
+---
+
+### Week 1 — Dataset Scaffolding & Environment Setup
+
+**Project:** `DHAP-34` — End-to-end data ingestion pipeline
+
+**What was built:**
+- Selected the `customer_care_emails` dataset and created the full dataset scaffold
+- Defined a **manifest file**, **schema contract (YAML)**, **SQL DDL** for the target table, and a **sample CSV**
+- Set up a Dockerized Airflow environment using Docker Compose with:
+  - Airflow webserver
+  - Airflow scheduler
+  - PostgreSQL database (all running locally)
+- Verified Airflow was accessible via browser and environment could be started/stopped consistently
+
+**Outcome:** A reproducible, fully containerized local development environment with a clearly defined dataset structure.
+
+---
+
+### Week 2 — Airflow DAG Implementation & Pipeline Validation
+
+**Project:** `DHAP-34` continued
+
+**What was built:**
+- Implemented an Airflow DAG that loads CSV data into PostgreSQL across 4 steps:
+  1. **File existence check** — DAG fails fast if CSV is missing
+  2. **Schema validation** — Columns validated against the YAML contract
+  3. **Data cleaning** — Whitespace stripping, type casting, null handling
+  4. **PostgreSQL load** — Duplicate-safe upsert for idempotent re-runs
+- Validated the full pipeline end-to-end using pgAdmin to confirm data was written correctly
+- Created detailed **documentation and a runbook** covering setup, execution, troubleshooting, and future dataset updates
+
+**Outcome:** A fully functional, idempotent ingestion pipeline with clear runbook documentation ready for handoff to another engineer.
+
+---
+
+### Week 3 — Object Storage Integration (CSV → Parquet → MinIO)
+
+**What was built:**
+- Extended the pipeline to convert validated CSV data into **Parquet format** before storage
+- Integrated **MinIO** as an S3-compatible object storage layer
+- The updated pipeline flow:
 
 ```
-CSV → Validate → Transform → Parquet → Object Storage
+CSV → File Check → Schema Validation → Clean & Transform → Parquet → MinIO Upload
 ```
 
-And all of this is orchestrated by Airflow inside Docker.
+- Parquet chosen for its columnar compression and analytics efficiency
+- All steps orchestrated by Airflow inside Docker
 
-## DAY 4
+**Key design decisions:**
+- Schema contract in `schema_expected.yaml` validated before any transformation
+- Partition columns (year/month) optionally added during transformation
+- MinIO acts as the Bronze landing zone for raw-but-validated data
 
-> I worked on building **Bronze to Silver layer data transformation pipelines** for the data warehouse.
-> 
-> This involved creating standardized transformation configurations for two datasets: **contact_employments** and **contact_phones**.
+**Outcome:** Analytics-optimized object storage pipeline with full orchestration and validation gates.
 
-> For each dataset, I created a complete transformation package consisting of five key configuration files.
-> 
-> The **config.yaml** defines the data source (Bronze layer table), target (Silver layer table), and transformation rules for each column.
-> 
-> The **dag.yaml** specifies the Airflow DAG settings including schedule, retries, timeouts, and processing configuration.
-> 
-> The **query.sql** implements the actual transformation logic using SQL to clean, normalize, and deduplicate the data.
+---
 
-> The transformation logic includes multiple data quality steps:
-> 
-> - **String cleaning**: Trimming whitespace, converting to lowercase where appropriate, handling empty strings as nulls
-> - **Data validation**: Ensuring required fields like contact_id and organization_id are present and valid
-> - **Deduplication**: Using ROW_NUMBER() with PARTITION BY to keep only the most recent and relevant records
-> - **Date normalization**: Parsing dates consistently and handling null values properly
-> - **Boolean defaults**: Ensuring boolean flags like is_current have proper default values
+### Week 4 — Month 1 Review & Pipeline Hardening
 
-> I defined the **schema.yaml** for each target table, specifying column names, data types, nullability constraints, and descriptions.
-> 
-> This creates a clear schema contract that documents what the Silver layer tables should contain.
+**Focus:** Stabilization, documentation cleanup, and pipeline reliability review
 
-> Finally, I built a comprehensive **tests.yaml** file with automated data quality tests:
-> 
-> - Row count validation to ensure data exists
-> - NOT NULL checks for required fields
-> - Empty string validation for key columns
-> - Data freshness checks to ensure timely updates
-> - Regex pattern matching for UUID format validation
-> - Custom SQL tests for business logic validation
-> - Occupation normalization checks to ensure lowercase consistency
+**What was done:**
+- End-to-end pipeline re-run tests across multiple scenarios (missing file, schema mismatch, duplicate data)
+- Confirmed all failure modes exit cleanly with descriptive error messages
+- Reviewed runbook with team and incorporated feedback
+- Finalized Month 1 deliverables for handoff
 
-> This approach creates **reusable, configuration-driven transformation pipelines** that are easy to maintain and extend.
-> 
-> Each dataset follows the same pattern, making it simple to onboard new transformations in the future.
-> 
-> The combination of declarative configuration and SQL-based logic provides both flexibility and clarity.
+**Outcome:** Production-hardened pipeline with validated failure handling and complete documentation.
 
-## DAY 5
+---
 
-> I worked on completing the **Silver to Gold transformation layer** for analytics-ready reporting.
-> 
-> Building on the Silver tables (`blackdiamond_silver.contact_employments` and `blackdiamond_silver.contact_phones`), I created six Gold datasets for business metrics:
-> 
-> - **contacts_by_org**: counts distinct contacts per organization
-> - **contacts_by_occupation**: shows occupation-wise contact distribution
-> - **current_employments**: counts active employments (`is_current = true`) by organization
-> - **contacts_with_phone**: counts contacts that have phone numbers
-> - **contacts_without_phone**: identifies contacts missing phone numbers using LEFT JOIN logic
-> - **phone_type_distribution**: provides distribution of phone labels/types
+## Month 2 — Lakehouse Architecture
 
-> For each Gold transformation, I prepared a complete, standardized package:
-> 
-> - **query.sql** with aggregation logic
-> - **schema.yaml** defining output schema contracts
-> - **dag.yaml** for orchestration configuration
-> - **tests.yaml** with column-level quality checks (mainly `not_null` on dimensions and metric columns)
+> **Focus:** Building Bronze-to-Silver transformation layers with configuration-driven pipelines and automated data quality testing.
 
-> This work makes the pipeline dashboard-ready by providing pre-aggregated, clean, and validated metrics that reduce query cost and improve reporting performance.
+---
 
+### Week 5 — Bronze → Silver: `contact_employments` Transformation
 
+**What was built:**
+
+A complete transformation package for the `contact_employments` dataset with 5 configuration files:
+
+| File | Purpose |
+|---|---|
+| `config.yaml` | Source (Bronze), target (Silver), column-level transformation rules |
+| `dag.yaml` | Airflow DAG settings — schedule, retries, timeouts |
+| `query.sql` | SQL transformation logic — cleaning, normalization, deduplication |
+| `schema.yaml` | Silver table schema contract — column names, types, nullability |
+| `tests.yaml` | Automated data quality test suite |
+
+**Transformation logic implemented:**
+- String cleaning: whitespace trimming, lowercase normalization, empty → null
+- Required field validation: `contact_id`, `organization_id`
+- Deduplication via `ROW_NUMBER() PARTITION BY` (most recent record wins)
+- Date normalization with null-safe parsing
+- Boolean defaults for `is_current` flag
+
+**Outcome:** A reusable, config-driven Bronze → Silver pipeline for employment data.
+
+---
+
+### Week 6 — Bronze → Silver: `contact_phones` Transformation
+
+**What was built:**
+
+Applied the same standardized transformation pattern to the `contact_phones` dataset:
+
+- `config.yaml`, `dag.yaml`, `query.sql`, `schema.yaml`, `tests.yaml` — all defined
+- Phone-specific transformation rules: label normalization, null-safe handling
+- Schema contract defining output Silver table structure with type and nullability constraints
+
+**Data quality tests defined in `tests.yaml`:**
+- Row count validation (data existence check)
+- NOT NULL enforcement on required fields
+- Empty string validation for key columns
+- Data freshness checks for timely pipeline updates
+- UUID format validation via regex pattern matching
+- Custom SQL tests for business logic
+- Occupation normalization checks (lowercase consistency)
+
+**Outcome:** Fully tested Silver layer for phone data following the same reusable pattern as Week 5.
+
+---
+
+### Week 7 — Configuration-Driven Pipeline Standardization
+
+**Focus:** Making the Bronze → Silver pattern reusable across all future datasets
+
+**What was done:**
+- Formalized the 5-file configuration standard as the team's transformation template
+- Documented the pattern: how to onboard a new dataset using the same structure
+- Reviewed both `contact_employments` and `contact_phones` transformations for consistency
+- Tested pipelines for edge cases: nulls, schema drift, duplicate handling
+
+**Key insight:** Declarative configuration (YAML) + SQL transformation logic = flexibility with clarity. Any engineer can onboard a new dataset without writing orchestration code from scratch.
+
+**Outcome:** A documented, reusable transformation framework ready for scale.
+
+---
+
+### Week 8 — Month 2 Review & Silver Layer Sign-off
+
+**Focus:** End-to-end Silver layer validation and quality gate review
+
+**What was done:**
+- Full pipeline run: Bronze ingestion → Silver transformation → quality test execution
+- Verified all `tests.yaml` checks pass for both datasets
+- Reviewed schema contracts against actual Silver table state in PostgreSQL
+- Documentation updated to reflect final Silver layer structure
+
+**Outcome:** Two production-ready Silver tables (`blackdiamond_silver.contact_employments`, `blackdiamond_silver.contact_phones`) with automated quality coverage.
+
+---
+
+## Month 3 — Gold Layer & Analytics
+
+> **Focus:** Silver-to-Gold transformations producing pre-aggregated, analytics-ready datasets for business reporting.
+
+---
+
+### Week 9 — Gold Layer Design & First Aggregations
+
+**What was built:**
+
+Designed the Gold layer architecture and implemented the first three Gold datasets:
+
+| Gold Dataset | Logic |
+|---|---|
+| `contacts_by_org` | Distinct contact count per organization |
+| `contacts_by_occupation` | Occupation-wise contact distribution |
+| `current_employments` | Active employment count (`is_current = true`) by org |
+
+Each Gold dataset packaged with:
+- `query.sql` — aggregation logic
+- `schema.yaml` — output schema contract
+- `dag.yaml` — orchestration configuration
+- `tests.yaml` — `not_null` checks on all dimension and metric columns
+
+**Outcome:** Three analytics-ready Gold tables with full orchestration and quality coverage.
+
+---
+
+### Week 10 — Gold Layer: Phone Analytics & Contact Coverage
+
+**What was built:**
+
+Three additional Gold datasets focused on phone coverage metrics:
+
+| Gold Dataset | Logic |
+|---|---|
+| `contacts_with_phone` | Count of contacts that have a phone number |
+| `contacts_without_phone` | Contacts missing phone numbers (LEFT JOIN pattern) |
+| `phone_type_distribution` | Distribution of phone labels/types across contacts |
+
+**Design decision:** `contacts_without_phone` uses a LEFT JOIN with NULL filter rather than a subquery — more performant and readable at scale.
+
+**Outcome:** Complete phone coverage analytics surfaced at the Gold layer, ready for dashboard consumption.
+
+---
+
+### Week 11 — Pipeline Integration & End-to-End Testing
+
+**Focus:** Full Bronze → Silver → Gold pipeline integration run
+
+**What was done:**
+- Triggered the complete 3-layer pipeline in sequence via Airflow
+- Validated row counts and metric values across all 6 Gold tables
+- Confirmed all `tests.yaml` quality checks pass end-to-end
+- Benchmarked query performance on Gold tables vs raw Bronze queries
+- Documented the full data lineage: source CSV → Bronze → Silver → Gold
+
+**Outcome:** A fully validated, end-to-end lakehouse pipeline with 6 production-ready Gold datasets.
+
+---
+
+### Week 12 — Final Documentation, Handoff & Retrospective
+
+**Focus:** Closing the internship with clean handoff artefacts
+
+**What was done:**
+- Finalized all runbooks across Month 1–3
+- Created a data lineage diagram documenting the full pipeline flow
+- Wrote onboarding guide for the next engineer: how to add a new dataset through all 3 layers
+- Conducted retrospective: what worked, what would be improved with more time
+- Final presentation of the complete pipeline to the team
+
+**Outcome:** Full project handoff with documentation, lineage, and onboarding materials complete.
+
+---
+
+## Key Takeaways
+
+| Area | Learning |
+|---|---|
+| **Orchestration** | Airflow DAGs with clear task dependencies make pipelines debuggable and observable |
+| **Validation** | Schema contracts at every layer (YAML) catch issues before they reach production |
+| **Idempotency** | Duplicate-safe pipeline design is non-negotiable for reliable re-runs |
+| **Configuration-driven design** | Separating SQL logic from orchestration config makes pipelines scalable |
+| **Layered architecture** | Bronze / Silver / Gold separation improves both data quality and query performance |
+| **Documentation** | Runbooks written as you build are far better than written after the fact |
+
+---
+
+<div align="center">
+
+**3 months · 12 weeks · Bronze → Silver → Gold**  
+Built with Apache Airflow · PostgreSQL · Docker · MinIO · Python · SQL
+
+</div>
